@@ -1,0 +1,399 @@
+\documentclass[10pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,mathrsfs}
+\usepackage{xparse}
+\usepackage[inline,shortlabels]{enumitem}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,partopsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=0.5in,bottom=0.2in,left=0.5in,right=0.5in,footskip=0.3in,includefoot]{geometry}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{minted} % tcolorbox minted library, required to use the "minted" tcb listing engine (this library is not loaded by the option [most])
+\usepackage{minted} % Allows input of raw code, such as Python code
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{amssymb}
+\usepackage{comment} 
+
+% Borrar
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[colorlinks]{hyperref} % ALWAYS load this package LAST
+
+\newtheorem{theorem}{Theorem}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2cm, right=2cm}
+
+% Custom tcolorbox style for Python code (not the code or the box it appears in, just the options for the box)
+\tcbset{
+    pythoncodebox/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,colframe=gray!20!black,
+        boxrule=1pt,top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top left,
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolframe] (frame.south west)
+                --([yshift=-4pt]frame.north west)
+                to[out=90,in=180] ([xshift=4pt]frame.north west)
+                --([xshift=-8pt]frame.north east)
+                to[out=0,in=180] ([xshift=16pt]frame.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox/.default={}, % Default is No title
+    %%% Starred version has no frame %%%
+    pythoncodebox*/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,coltitle=gray!20!black,colbacktitle=tcbcolback,
+        frame hidden,
+        top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top text left={yshift=-1mm},
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolback] (interior.south west)
+                --([yshift=-4pt]interior.north west)
+                to[out=90,in=180] ([xshift=4pt]interior.north west)
+                --([xshift=-8pt]interior.north east)
+                to[out=0,in=180] ([xshift=16pt]interior.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox*/.default={}, % Default is No title
+}
+
+% Custom tcolorbox for Python code (not the code itself, just the box it appears in)
+\newtcolorbox{pythonbox}[1][]{pythoncodebox=#1}
+\newtcolorbox{pythonbox*}[1][]{pythoncodebox*=#1} % Starred version has no frame
+
+% Custom minted environment for Python code, NOT using tcolorbox
+\newminted{python}{autogobble,breaklines,mathescape}
+
+% Custom tcblisting environment for Python code, using the "minted" tcb listing engine
+% Adapted from https://tex.stackexchange.com/a/402096
+\NewTCBListing{python}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+%%% Starred version has no frame %%%
+\NewTCBListing{python*}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox*={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+% verbbox environment, for showing verbatim text next to code output (for package documentation and user learning purposes)
+\NewTCBListing{verbbox}{ !O{} }{
+    listing engine=minted,
+    minted language=latex,
+    boxrule=1pt,sidebyside,skin=bicolor,
+    colback=gray!10,colbacklower=white,valign=center,
+    top=2pt,bottom=2pt,left=2pt,right=2pt,
+    #1
+} % Last argument allows more tcolorbox options to be added
+
+\setlength{\parindent}{0.2in}
+\setlength{\parskip}{0pt}
+\setlength{\columnseprule}{0pt}
+
+\makeatletter
+% Redefining the title block
+\renewcommand\maketitle{
+    \null\vspace{4mm}
+    \begin{center}
+        {\Huge\sffamily\bfseries\selectfont\@title}\\
+            \vspace{4mm}
+        {\Large\sffamily\selectfont\@author}\\
+            \vspace{4mm}
+        {\large\sffamily\selectfont\@date}
+    \end{center}
+    \vspace{6mm}
+}
+% Adapted from https://tex.stackexchange.com/questions/483953/how-to-add-new-macros-like-author-without-editing-latex-ltx?noredirect=1&lq=1
+
+\hypersetup{
+    colorlinks=true,  % Activa el color de los enlaces
+    linkcolor=black,  % Color de los enlaces internos
+    citecolor=black   % Color de las citas
+}
+
+\makeatother
+
+\pagestyle{fancy}
+\fancyhead[L]{\textbf{Python/AI}}
+\fancyhead[C]{}
+\fancyhead[R]{2026}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\huge Unveiling Carnivorous Plant Diversity: A Genus- and Species-Level Exploration} \\
+    \vspace{0.5cm}
+    \textit{Analyzing global patterns in carnivorous plant genera and species using the Harvard dataset.} \\
+    \vspace{1cm}
+    \textbf{Hernández Pérez Erick Fernando} \\
+    \vspace{0.5cm}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/icon.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\noindent Since I was a child, carnivorous plants have fascinated me. I even had two Venus flytraps, carefully observing their exquisite morphology and intricate traps. These peculiar plants captivate us because they challenge our typical notions of what a plant should be: \emph{What about photosynthesis?}
+
+This fascination is shared by many. Charles Darwin, for instance, marveled at their ingenious mechanisms, describing some carnivorous plants as if they displayed behaviors more typical of animals than of plants. The diversity of carnivorous plants is astonishing—they are not limited to Venus flytraps or sundews; there are pitfall traps, sticky traps, and many other ingenious ways of capturing prey. Their forms of hunting remind us that nature itself can produce the most extraordinary wonders, often surpassing our imagination and claiming true ownership of what one might call ``science fiction.''
+
+So why not dedicate a part of my work to these remarkable plants that have given me so much to admire? As in my previous articles, this exploration is divided into two parts: first, a detailed examination of the dataset, followed by the application of machine learning techniques.
+
+For this study, we will use the Harvard dataset:
+
+\begin{quote}
+Ellison A, Fitzpatrick M, Gotelli N. 2023. Species Distribution Modeling of Carnivorous Plants Worldwide. Harvard Forest Data Archive: HF332 (v.4). Environmental Data Initiative: \url{https://doi.org/10.6073/pasta/af85078378dc3f0b4e82d4630a78d393}.
+\end{quote}
+
+In the following article, we will enrich this dataset with bioclimatic variables to provide more information for modeling. But first, it is essential to understand what Harvard offers for the study of carnivorous plants.
+
+\section*{Exploring the Geographic Distribution of Carnivorous Plant Genera}
+
+Before diving into the data, it is useful to clarify some biological terms. In taxonomy, a \textbf{species} represents the basic unit of biological classification, a group of organisms that can interbreed and produce fertile offspring. A \textbf{genus} (plural: genera) is a higher-level category that groups together species that are closely related and share common characteristics. For example, the genus \emph{Dionaea} contains the single species \emph{Dionaea muscipula}, commonly known as the Venus flytrap.
+
+With these definitions in mind, the Harvard dataset provides records for multiple genera of carnivorous plants from around the world. Exploring the geographic distribution of these genera allows us to identify patterns in where different types of carnivorous plants are found, understand their ecological preferences, and highlight regions of high diversity.
+
+In this section, we will examine the dataset to:
+\begin{itemize}
+    \item Identify the distinct genera represented in the dataset.
+    \item Map their geographic locations globally.
+    \item Highlight patterns or clusters in distribution that may indicate ecological or climatic preferences.
+\end{itemize}
+
+This preliminary exploration will lay the foundation for later analyses, including the integration of bioclimatic variables and predictive modeling using machine learning techniques.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('carnivorous_plants_Harvard.csv')
+
+# Sort genera by frequency (descending order)
+order = df['genus'].value_counts().index
+
+fig, ax = plt.subplots(figsize=(10,6))
+
+sns.countplot(
+    data=df,
+    x='genus',
+    order=order,
+    ax=ax
+)
+
+ax.set_title("Genus Frequency (Sorted Highest to Lowest)")
+ax.set_xlabel("Genus")
+ax.set_ylabel("Count")
+
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+\end{python}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{img/graph3.png} 
+\end{figure}
+
+Since \emph{Drosera} and \emph{Utricularia} are the most common genera in the dataset, their records are visualized separately. This approach helps prevent these abundant genera from overwhelming the map, making it easier to observe the distribution patterns of the less common genera. By highlighting them individually, we can provide a clearer and more informative visualization of the geographic spread of all carnivorous plant genera.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import cartopy.crs as ccrs
+import numpy as np
+
+# Create figure and Mercator projection axes
+fig = plt.figure(figsize=(12, 10))
+ax = plt.axes(projection=ccrs.Mercator())
+
+ax.coastlines()
+ax.gridlines(draw_labels=True)
+
+# List of genera
+genus_list = gdf['genus'].unique()
+colors = plt.cm.tab20(np.linspace(0, 1, len(genus_list)))
+
+# Plot each genus with a different color
+for genus, color in zip(genus_list, colors):
+    subset = gdf[(gdf['genus'] == genus) & (gdf['genus'].isin(['Utricularia', 'Drosera']))]
+    ax.scatter(
+        subset['longitude'],
+        subset['latitude'],
+        s=5,
+        color=color,
+        label=genus,
+        transform=ccrs.PlateCarree(),
+        alpha=0.4
+    )
+
+plt.title("Carnivorous Plant Records by Genus (Utricularia and Drosera) — Mercator Projection", fontsize=15)
+
+# Legend outside the map to avoid covering data
+plt.legend(
+    title="Genus",
+    loc="lower left",
+    bbox_to_anchor=(1.05, 0.1),
+    fontsize=10
+)
+
+plt.tight_layout()
+plt.show()
+\end{python}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{img/graph2.png} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{img/graph1.png} 
+\end{figure}
+
+The geographic distribution analysis reveals that regions such as Mexico, the United States, Europe, and Australia exhibit a particularly notable overlap of different carnivorous plant genera, although other areas also show significant co-occurrence. The genera \emph{Drosera} and \emph{Utricularia} appear to share habitats—at the observed scale—with \emph{Pinguicula}, \emph{Sarracenia}, and \emph{Byblis}, and to a lesser extent with \emph{Heliamphora}, \emph{Darlingtonia}, and \emph{Triphyophyllum}. 
+
+It is important to highlight that due to their abundance, \emph{Drosera} and \emph{Utricularia} exhibit overlap with most other genera, which emphasizes their wide ecological presence. This analysis underscores the value of exploring genus-level distributions to identify patterns of coexistence and diversity among carnivorous plants, providing a foundation for further ecological modeling and machine learning applications.
+
+\section*{Analyzing Species Count per Genus}
+
+To better understand the composition of carnivorous plant diversity in the dataset, it is essential to examine the number of species within each genus. While genus-level analyses provide insight into broad distribution patterns, knowing the species richness of each genus allows for a more precise approach in subsequent analyses, such as ecological modeling or machine learning applications.
+
+By quantifying species per genus, we can identify which genera are highly diverse and which are represented by only a few species. This information is critical for determining how to handle each genus in later stages: for example, whether some genera should be aggregated, treated individually, or weighted differently in modeling efforts. 
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import matplotlib.pyplot as plt
+
+# Compute species count per genus
+counts = (
+    df.groupby('genus')['species']
+      .nunique()
+      .sort_values(ascending=False)
+)
+
+# Plot
+fig, ax = plt.subplots(figsize=(10, 6))
+bars = ax.bar(counts.index, counts.values)
+
+# Title + labels
+ax.set_title("Number of Unique Species per Genus", fontsize=16, weight='bold')
+ax.set_xlabel("Genus", fontsize=12)
+ax.set_ylabel("Number of Species", fontsize=12)
+plt.xticks(rotation=45, ha='right')
+
+# Add value labels above each bar
+for bar in bars:
+    height = bar.get_height()
+    ax.text(
+        bar.get_x() + bar.get_width() / 2,
+        height + 0.5,
+        f"{int(height)}",
+        ha='center', va='bottom',
+        fontsize=10, weight='bold'
+    )
+
+# Aesthetic tweaks
+plt.tight_layout()
+plt.show()
+\end{python}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{img/graph4.png} 
+\end{figure}
+
+The analysis of species richness reveals that \emph{Utricularia}, \emph{Drosera}, and \emph{Pinguicula} dominate the dataset with 361, 165, and 72 species, respectively. The combined species count of all other genera does not even reach the total of \emph{Pinguicula}. Based on this observation, it is practical to manage the dataset using four main categories: the three dominant genera, and a fourth category grouping all remaining genera as ``Others.''
+
+This categorization raises an intriguing question: can these four groups effectively capture meaningful ecological patterns and improve the performance of subsequent modeling efforts? By focusing on the most species-rich genera while consolidating the rarer ones, we balance the need for interpretability, ecological relevance, and statistical robustness, setting the stage for more insightful analyses.
+
+\begin{thebibliography}{9}
+
+\bibitem{harvard}
+Ellison, A., Fitzpatrick, M., \& Gotelli, N. (2023).\textit{ Species distribution modeling of carnivorous plants worldwide (Version 4)} [Data set]. Harvard Forest Data Archive. Environmental Data Initiative. \url{https://doi.org/10.6073/pasta/af85078378dc3f0b4e82d4630a78d393}
+
+\end{thebibliography} 
+
+\begin{comment}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+
+\end{python}
+
+\begin{thebibliography}{9}
+
+\bibitem{auffarth}
+Auffarth, B. (2021). \textit{Machine Learning for Time-Series with Python}. Packt.
+
+\bibitem{bishop}
+Bishop, M. (2006). \textit{Pattern Recognition and Machine Learning}. Springer.
+
+\bibitem{fenner}
+Fenner, M. (2020). \textit{Machine Learning with Python for Everyone}. Addison-Wesley.
+
+\bibitem{geron}
+Géron, A. (2019). \textit{Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow}. O’Reilly
+
+\bibitem{harrington}
+Harrington, P. (2012). \textit{Machine Learning in Action}. Manning.
+
+\bibitem{mattmann}
+Mattmann, C. (2020). \textit{Machine Learning with TensorFlow}. Manning.
+
+\bibitem{raschka}
+Raschka, S., Liu, Y. \& Mirjalili, V. (2022). \textit{Machine Learning with PyTorch 
+and Scikit-Learn}. Packt.
+
+\bibitem{sklearn}
+Scikit-learn developers. (n.d.). Scikit-learn: Machine learning in Python. \url{https://scikit-learn.org/stable/}
+
+\bibitem{shalev}
+Shalev-Shwartz, S., \& Ben-David, S. (2014). \textit{Understanding machine learning: From theory to algorithms}. Cambridge University Press.
+
+\bibitem{wackerly}
+Wackerly, D., Mendenhall, W. \& Scheaffer, R. (2010). \textit{Estadística Matemática con Aplicaciones} [Mathematical statistics with applications]. Cengage Learning.
+
+
+\end{thebibliography} 
+\end{comment}
+
+\end{document}

@@ -1,0 +1,428 @@
+\documentclass[10pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,mathrsfs}
+\usepackage{xparse}
+\usepackage[inline,shortlabels]{enumitem}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,partopsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=0.5in,bottom=0.2in,left=0.5in,right=0.5in,footskip=0.3in,includefoot]{geometry}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{minted} % tcolorbox minted library, required to use the "minted" tcb listing engine (this library is not loaded by the option [most])
+\usepackage{minted} % Allows input of raw code, such as Python code
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{amssymb}
+\usepackage{comment} 
+
+% Borrar
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[colorlinks]{hyperref} % ALWAYS load this package LAST
+
+\newtheorem{theorem}{Theorem}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2cm, right=2cm}
+
+% Custom tcolorbox style for Python code (not the code or the box it appears in, just the options for the box)
+\tcbset{
+    pythoncodebox/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,colframe=gray!20!black,
+        boxrule=1pt,top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top left,
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolframe] (frame.south west)
+                --([yshift=-4pt]frame.north west)
+                to[out=90,in=180] ([xshift=4pt]frame.north west)
+                --([xshift=-8pt]frame.north east)
+                to[out=0,in=180] ([xshift=16pt]frame.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox/.default={}, % Default is No title
+    %%% Starred version has no frame %%%
+    pythoncodebox*/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,coltitle=gray!20!black,colbacktitle=tcbcolback,
+        frame hidden,
+        top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top text left={yshift=-1mm},
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolback] (interior.south west)
+                --([yshift=-4pt]interior.north west)
+                to[out=90,in=180] ([xshift=4pt]interior.north west)
+                --([xshift=-8pt]interior.north east)
+                to[out=0,in=180] ([xshift=16pt]interior.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox*/.default={}, % Default is No title
+}
+
+% Custom tcolorbox for Python code (not the code itself, just the box it appears in)
+\newtcolorbox{pythonbox}[1][]{pythoncodebox=#1}
+\newtcolorbox{pythonbox*}[1][]{pythoncodebox*=#1} % Starred version has no frame
+
+% Custom minted environment for Python code, NOT using tcolorbox
+\newminted{python}{autogobble,breaklines,mathescape}
+
+% Custom tcblisting environment for Python code, using the "minted" tcb listing engine
+% Adapted from https://tex.stackexchange.com/a/402096
+\NewTCBListing{python}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+%%% Starred version has no frame %%%
+\NewTCBListing{python*}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox*={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+% verbbox environment, for showing verbatim text next to code output (for package documentation and user learning purposes)
+\NewTCBListing{verbbox}{ !O{} }{
+    listing engine=minted,
+    minted language=latex,
+    boxrule=1pt,sidebyside,skin=bicolor,
+    colback=gray!10,colbacklower=white,valign=center,
+    top=2pt,bottom=2pt,left=2pt,right=2pt,
+    #1
+} % Last argument allows more tcolorbox options to be added
+
+\setlength{\parindent}{0.2in}
+\setlength{\parskip}{0pt}
+\setlength{\columnseprule}{0pt}
+
+\makeatletter
+% Redefining the title block
+\renewcommand\maketitle{
+    \null\vspace{4mm}
+    \begin{center}
+        {\Huge\sffamily\bfseries\selectfont\@title}\\
+            \vspace{4mm}
+        {\Large\sffamily\selectfont\@author}\\
+            \vspace{4mm}
+        {\large\sffamily\selectfont\@date}
+    \end{center}
+    \vspace{6mm}
+}
+% Adapted from https://tex.stackexchange.com/questions/483953/how-to-add-new-macros-like-author-without-editing-latex-ltx?noredirect=1&lq=1
+
+\hypersetup{
+    colorlinks=true,  % Activa el color de los enlaces
+    linkcolor=black,  % Color de los enlaces internos
+    citecolor=black   % Color de las citas
+}
+
+\makeatother
+
+\pagestyle{fancy}
+\fancyhead[L]{\textbf{Python/AI}}
+\fancyhead[C]{}
+\fancyhead[R]{2025}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\huge The Hopfield Network: A Nostalgic Mind in the Neural Wilderness} \\
+    \vspace{0.5cm}
+    \textit{Exploring the dynamic memory landscapes of one of the most enigmatic recurrent architectures.} \\
+    \vspace{1cm}
+    \textbf{Hernández Pérez Erick Fernando} \\
+    \vspace{0.5cm}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/icon.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\noindent One could easily write a book of species on the various models of neural networks—so vast a taxonomy that it would undoubtedly be worthy of Carl Linnaeus himself. From simple models like the McCulloch-Pitts neurons or Rosenblatt’s perceptron, to grander specimens such as convolutional neural networks —with architectures as imposing as LeNet, AlexNet, or ResNet.
+
+The ecosystem is undoubtedly broad, but it is time to turn our attention to a curious specimen that often eludes the common body of knowledge; not due to a lack of application or potential, but rather because of a subtle veil of unfamiliarity that still hovers over the place it inhabits. Its name is the Hopfield network.
+
+This type of network belongs to the family of recurrent networks—that is, the outputs of the neurons also serve as inputs for the next computation. Its behavior is dynamic: it evolves over time until reaching a stable state, as if the system were slowly settling into a resting position within an energy landscape, where each valley represents a learned configuration.
+
+Unlike other models that follow straightforward paths to an output, Hopfield networks move in spirals, as if rummaging through hazy memories to find the nearest matching pattern. This quality makes them particularly useful for recognizing and reconstructing incomplete or corrupted patterns—much like a blurry image coming into focus from just a few well-placed clues. When presented with a partial input, the network remembers—in a literal sense of associative memory—the closest complete pattern it previously learned.
+
+Thus, rather than predicting, Hopfield networks remember. And they do so with an elegance that only well-crafted systems possess: they converge, stabilize, and retrieve what was once taught to them, without the need for ongoing supervision. They are, in a sense, a kind of nostalgic memory within the vast kingdom of neural networks.
+
+\section*{The Notation}
+We follow the notation given for Mehlig \cite{mehlig}. We consider $p$ patterns indexed by $\mu=1,...,p$. The bits of pattern $\mu$ are denoted by $x_i^{(\mu)}$. The index $i=1,...,N$ labels the different bits of a given pattern, and $N$ is the number of bits per pattern.
+
+The bits are binary, they only can take the values -1 and +1. Its convenient to gather the bits of a pattern in a column vector:
+
+$$\textbf{x}^{(\mu)}=\begin{bmatrix}
+    x_1^{(\mu)}\\
+    x_2^{(\mu)}\\
+    \vdots\\
+     x_N^{(\mu)}
+\end{bmatrix}$$
+
+``The task of the neural network is to recognize distorted patterns'' (Mehlig, 2021). We could say that this process resembles a form of memorization and recall: when presented with a given pattern, the network identifies the most similar one it has previously learned.
+
+To make things more concrete, We store $p$ patterns in the neural network and then present it with a distorted version of one of them. The network is then asked to retrieve the stored pattern that best matches the distorted input.
+
+But, how we can define how similar a distorted pattern $\textbf{x}$ is to any of the stored patterns $\textbf{x}^{(\mu)}$?. We define the distance $d_\mu$ between the patterns $\textbf{x}$ and $\textbf{x}^{(\mu)}$ in terms of the mean squared error:
+
+$$d_\mu=\frac{1}{4N}\sum_{i=1}^N (x_i-x_i^{(\mu)})^2$$
+
+We use $\frac{1}{4N}$ is chosen so that the distance equals the fraction of bits by which two $\pm1$ patterns differ. So, the distance tells us how many bits differ between each pattern.
+
+\section*{The Hebb's Rule}
+
+The Hopfield networks are networks of McCulloch-Pitts neurons (see \href{https://github.com/Erick-FHP/Series}{3. Implementing McCulloch and Pitts Neuron in Python}) designed to solve the pattern-recognition problem.
+
+The bits of the patterns are encoded through a specific choice of weights known as Hebb's rule. But before addressing that, we need to analyze the function of the network itself.
+
+The possible state of the McCulloch-Pitts neurons in the network are
+
+$$\textbf{s}=\begin{bmatrix}
+    s_1 \\
+    s_2\\
+    \vdots \\
+    s_N
+\end{bmatrix}$$
+
+$\textbf{s}$ forms the configuration space of the network. The components of the state vector $\textbf{s}$ are updated according to the synchronous rule:
+
+$$b_i(t)=\sum_{j=1}^N w_{ij}s_j(t)-\theta_i$$
+$$s_i(t+1)=\text{sgn}(b_i(t))$$
+
+The first step in recognizing a distorted pattern is to feed its bits $x_i$ into the network. Thus, we set:
+
+$$s_i(t=0)=x_i$$
+
+Now, we need to choose a set of weights $w_{ij}$ such that the network converges to the correct stored pattern. For instance, if $\textbf{x}$ is a distorted version of $\textbf{x}^{(\mu)}$, then we want:
+
+$$\textbf{s}(t=0)=\textbf{x}\approx\textbf{x}^{(\mu)} \hspace{0.5cm} \Longrightarrow \hspace{0.5cm} \textbf{s}(t)\to \textbf{x}^{(\mu)} \hspace{0.3cm} \text{as} \hspace{0.3cm} t\to\infty$$
+
+Let us begin at the beginning: how does the network detect a pattern $\textbf{x}^{(\mu)}$ as one of the stored ones? More formally, we require:
+
+$$\textbf{s}(t=0)=\textbf{x}^{(\mu)} \hspace{0.5cm} \Longrightarrow \hspace{0.5cm} \textbf{s}(t)= \textbf{x}^{(\mu)} \hspace{0.3cm} \forall \hspace{0.3cm} t=0,1,2,...$$
+
+Let us consider a simple case first, where is only one pattern $\textbf{x}^{(i)}$. We can choose the following weights and thresholds:
+
+\begin{align*}
+    w_{ij}&=\frac{1}{N}x_i^{(1)}x_j^{(1)}\\
+    \theta_i&=0
+\end{align*}
+
+This learning rule reminds of a relation between activation patterns of neurons and their coupling, pustulated by Hebb more than 70 years ago (Mehlig, 2021):
+
+\begin{quote}
+    When an axon of cell A is near enough to excite a cell B and repeatedly or persistently takes part in firing it, some growth process or metabolic change takes place in one or both cells such that A’s efficiency, as one of the cells firing B, is increased.
+\end{quote}
+
+This learning process strengthens connections: the coupling between neurons increases if they are active at the same time. Let us now see whether the Hopfield network can recognize the pattern $\textbf{x}^{(1)}$:
+
+$$\sum_{j=1}^Nw_{ij}x_j^{(1)} = \frac{1}{N}\sum_{j=1}^Nx_i^{(1)}x_j^{(1)}x_j^{(1)}=\frac{1}{N}\sum_{j=1}^Nx_i^{(1)}=x_i^{(1)}$$
+
+Finally, applying the sign function:
+
+$$\text{sgn}\left(\sum_{j=1}^N w_{ij}x_j^{(1)}\right)=x_i^{(1)}$$
+
+Therefore, the pattern remains unchanged, and the network correctly recognizes it as one of the stored patterns.
+
+But does the network actually correct errors? Is the pattern $\textbf{x}^{(1)}$ an attractor? This question cannot be answered in general. Nevertheless, in practice, Hopfield networks often perform remarkably well.
+
+It is a fundamental insight that neural networks can yield good results even when there is no formal proof that their dynamics will converge to the correct solution.
+
+For now, returning to our main discussion, the general form of the weight matrix for a single pattern of $N$ bits is given by:
+
+$$W=\frac{1}{N}\textbf{x}^{(1)}\textbf{x}^{(i)T}$$
+
+\section*{More than one pattern}
+
+We now generalize Hebb's rule to $p$ patterns:
+
+\begin{align*}
+    w_{ij}&=\frac{1}{N}\sum_{\mu=1}^px_i^{(\mu)}x_j^{(\mu)}\\
+    \theta_i&=0
+\end{align*}
+
+An alternative version of Hebb's rule (and more common) sets the diagonal weights to zero:
+
+\begin{align*}
+    w_{ij}&=\frac{1}{N}\sum_{\mu=1}^px_i^{(\mu)}x_j^{(\mu)}\hspace{0.5cm}\text{for} \hspace{0.5cm}i\neq j\\
+    w_{ii}&=0\\
+    \theta_i&=0
+\end{align*}
+
+Now we need to check whether this form recognizes the stored patterns. In other words, we need to verify whether the following holds:
+
+$$\text{sgn}\left(\frac{1}{N}\sum_{i\neq j}\sum_\mu x_i^{(\mu)}x_j^{(\mu)}x_j^{(\nu )}\right) = x_i^{(\nu)}$$
+
+To determine whether a stored pattern is a fixed point of the Hopfield network dynamics, we examine the local field acting on neuron $i$ when the network is presented with one of the stored patterns, say $\mathbf{x}^{(1)}$. The local field is defined as:
+
+\begin{equation*}
+    b_i = \sum_{j=1}^{N} W_{ij} x_j^{(1)},
+\end{equation*}
+
+where $W_{ij}$ is the weight matrix, constructed using the Hebbian learning rule for $p$ stored patterns:
+
+\begin{equation*}
+    W_{ij} = \frac{1}{N} \sum_{\mu=1}^{p} x_i^{(\mu)} x_j^{(\mu)} \quad \text{with} \quad W_{ii} = 0.
+\end{equation*}
+
+Substituting into the local field expression, we obtain:
+
+\begin{align*}
+    b_i &= \sum_{j=1}^{N} \left( \frac{1}{N} \sum_{\mu=1}^{p} x_i^{(\mu)} x_j^{(\mu)} \right) x_j^{(1)} \\
+        &= \frac{1}{N} \sum_{\mu=1}^{p} x_i^{(\mu)} \sum_{j=1}^{N} x_j^{(\mu)} x_j^{(1)}.
+\end{align*}
+
+We now separate the contribution from the pattern $\mu = 1$, which is the one we wish the network to recognize, from the rest:
+
+\begin{equation*}
+    b_i = \frac{1}{N} x_i^{(1)} \sum_{j=1}^{N} x_j^{(1)} x_j^{(1)} + \frac{1}{N} \sum_{\mu=2}^{p} x_i^{(\mu)} \sum_{j=1}^{N} x_j^{(\mu)} x_j^{(1)}.
+\end{equation*}
+
+Since $x_j^{(1)} \in \{-1, +1\}$, we have $x_j^{(1)} x_j^{(1)} = 1$, so the first term simplifies to:
+
+\begin{equation*}
+    \frac{1}{N} x_i^{(1)} \sum_{j=1}^{N} 1 = x_i^{(1)}.
+\end{equation*}
+
+However, because $W_{ii} = 0$, the self-connection must be excluded from the sum. Therefore, the corrected local field becomes:
+
+\begin{equation*}
+    b_i = x_i^{(1)} \left( 1 - \frac{1}{N} \right) + \text{cross-talk term},
+\end{equation*}
+
+where the cross-talk term contains the interference from the other stored patterns $(\mu \ne 1)$. For the network to recognize the pattern $\mathbf{x}^{(1)}$ correctly, this interference must not alter the sign of $b_i$.
+
+Whether adding the cross-talk term to $x_i^{(1)}$ affects the sign of the local field $b_i$ depends on the specific set of stored patterns. The cross-talk term contains a sum over all stored patterns $\mu = 1, \ldots, p$, and its contribution becomes more significant as $p$ increases.
+
+However, when the number of stored patterns $p$ is small relative to the number of neurons $N$, the cross-talk term tends to be small. In such cases, it is unlikely to change the sign of $b_i$, and the network is more likely to correctly recognize the stored patterns.
+
+It is plausible that the stored patterns are not only fixed points but also attractors of the network dynamics. This means that slightly distorted versions of the stored patterns are expected to converge to the correct pattern over time.
+
+\section*{Limitations of Hopfield Networks}
+
+While Hopfield networks offer an elegant framework for associative memory, they are not without limitations. Understanding these drawbacks is crucial for applying the model effectively and for appreciating its extensions in modern neural network theory.
+
+\subsection*{1. Limited Storage Capacity}
+
+The number of patterns that can be reliably stored and recalled in a Hopfield network is limited. For a network with $N$ neurons, the practical storage capacity is approximately:
+
+\begin{equation*}
+    p_{\text{max}} \approx 0.138N,
+\end{equation*}
+
+beyond which the probability of successful recall sharply decreases due to interference (cross-talk) between stored patterns.
+
+\subsection*{2. Spurious States}
+
+In addition to the stored patterns, Hopfield networks can converge to unintended stable states, known as \textit{spurious states}. These can include:
+\begin{itemize}
+    \item Linear combinations (or mixtures) of stored patterns,
+    \item Patterns that are not part of the training set but emerge due to network dynamics,
+    \item Inverted patterns (negatives of the originals) if not explicitly controlled.
+\end{itemize}
+
+Spurious states reduce the reliability of the network and may lead to incorrect or ambiguous outputs.
+
+\subsection*{3. Symmetric Weight Matrix Requirement}
+
+Hopfield networks require the weight matrix $W$ to be symmetric ($W_{ij} = W_{ji}$) and have no self-connections ($W_{ii} = 0$). While this ensures convergence to stable states, it also limits the network's expressiveness and adaptability.
+
+\subsection*{4. Binary Neuron Outputs}
+
+The original Hopfield model uses binary neurons ($\pm 1$), which restricts the kind of information it can store and recall. Continuous or more complex data representations require modifications or generalizations of the model.
+
+\subsection*{5. Inefficiency for Large-Scale Problems}
+
+Hopfield networks are not well suited for high-dimensional or large-scale problems. Their computational cost and tendency to converge to local minima make them inefficient compared to modern deep learning architectures.
+
+\bigskip
+
+Despite these limitations, Hopfield networks remain a foundational model in neural computation, offering deep insights into memory, energy-based learning, and dynamical systems.
+
+
+
+\begin{thebibliography}{9}
+
+\bibitem{mehlig}
+Mehlig, B. (2021). \textit{Machine learning with neural networks}. Department of Physics, University of Gothenburg.
+
+\end{thebibliography} 
+
+\begin{comment}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+
+\end{python}
+
+\begin{thebibliography}{9}
+
+\bibitem{bishop}
+Bishop, M. (2006). \textit{Pattern Recognition and Machine Learning}. Springer.
+
+\bibitem{fenner}
+Fenner, M. (2020). \textit{Machine Learning with Python for Everyone}. Addison-Wesley.
+
+\bibitem{geron}
+Géron, A. (2019). \textit{Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow}. O’Reilly
+
+\bibitem{harrington}
+Harrington, P. (2012). \textit{Machine Learning in Action}. Manning.
+
+\bibitem{mattmann}
+Mattmann, C. (2020). \textit{Machine Learning with TensorFlow}. Manning.
+
+\bibitem{mehlig}
+Mehlig, B. (2021). \textit{Machine learning with neural networks}. Department of Physics, University of Gothenburg.
+
+\bibitem{raschka}
+Raschka, S., Liu, Y. \& Mirjalili, V. (2022). \textit{Machine Learning with PyTorch 
+and Scikit-Learn}. Packt.
+
+\bibitem{shalev}
+Shalev-Shwartz, S., \& Ben-David, S. (2014). \textit{Understanding machine learning: From theory to algorithms}. Cambridge University Press.
+
+\bibitem{wackerly}
+Wackerly, D., Mendenhall, W. \& Scheaffer, R. (2010). \textit{Estadística Matemática con Aplicaciones} [Mathematical statistics with applications]. Cengage Learning.
+
+
+\end{thebibliography} 
+\end{comment}
+
+\end{document}
+

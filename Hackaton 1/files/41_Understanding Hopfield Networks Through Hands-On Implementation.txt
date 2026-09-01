@@ -1,0 +1,466 @@
+\documentclass[10pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,mathrsfs}
+\usepackage{xparse}
+\usepackage[inline,shortlabels]{enumitem}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,partopsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=0.5in,bottom=0.2in,left=0.5in,right=0.5in,footskip=0.3in,includefoot]{geometry}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{minted} % tcolorbox minted library, required to use the "minted" tcb listing engine (this library is not loaded by the option [most])
+\usepackage{minted} % Allows input of raw code, such as Python code
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{amssymb}
+\usepackage{comment} 
+
+% Borrar
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[colorlinks]{hyperref} % ALWAYS load this package LAST
+
+\newtheorem{theorem}{Theorem}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2cm, right=2cm}
+
+% Custom tcolorbox style for Python code (not the code or the box it appears in, just the options for the box)
+\tcbset{
+    pythoncodebox/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,colframe=gray!20!black,
+        boxrule=1pt,top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top left,
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolframe] (frame.south west)
+                --([yshift=-4pt]frame.north west)
+                to[out=90,in=180] ([xshift=4pt]frame.north west)
+                --([xshift=-8pt]frame.north east)
+                to[out=0,in=180] ([xshift=16pt]frame.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox/.default={}, % Default is No title
+    %%% Starred version has no frame %%%
+    pythoncodebox*/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,coltitle=gray!20!black,colbacktitle=tcbcolback,
+        frame hidden,
+        top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top text left={yshift=-1mm},
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolback] (interior.south west)
+                --([yshift=-4pt]interior.north west)
+                to[out=90,in=180] ([xshift=4pt]interior.north west)
+                --([xshift=-8pt]interior.north east)
+                to[out=0,in=180] ([xshift=16pt]interior.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox*/.default={}, % Default is No title
+}
+
+% Custom tcolorbox for Python code (not the code itself, just the box it appears in)
+\newtcolorbox{pythonbox}[1][]{pythoncodebox=#1}
+\newtcolorbox{pythonbox*}[1][]{pythoncodebox*=#1} % Starred version has no frame
+
+% Custom minted environment for Python code, NOT using tcolorbox
+\newminted{python}{autogobble,breaklines,mathescape}
+
+% Custom tcblisting environment for Python code, using the "minted" tcb listing engine
+% Adapted from https://tex.stackexchange.com/a/402096
+\NewTCBListing{python}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+%%% Starred version has no frame %%%
+\NewTCBListing{python*}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox*={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+% verbbox environment, for showing verbatim text next to code output (for package documentation and user learning purposes)
+\NewTCBListing{verbbox}{ !O{} }{
+    listing engine=minted,
+    minted language=latex,
+    boxrule=1pt,sidebyside,skin=bicolor,
+    colback=gray!10,colbacklower=white,valign=center,
+    top=2pt,bottom=2pt,left=2pt,right=2pt,
+    #1
+} % Last argument allows more tcolorbox options to be added
+
+\setlength{\parindent}{0.2in}
+\setlength{\parskip}{0pt}
+\setlength{\columnseprule}{0pt}
+
+\makeatletter
+% Redefining the title block
+\renewcommand\maketitle{
+    \null\vspace{4mm}
+    \begin{center}
+        {\Huge\sffamily\bfseries\selectfont\@title}\\
+            \vspace{4mm}
+        {\Large\sffamily\selectfont\@author}\\
+            \vspace{4mm}
+        {\large\sffamily\selectfont\@date}
+    \end{center}
+    \vspace{6mm}
+}
+% Adapted from https://tex.stackexchange.com/questions/483953/how-to-add-new-macros-like-author-without-editing-latex-ltx?noredirect=1&lq=1
+
+\hypersetup{
+    colorlinks=true,  % Activa el color de los enlaces
+    linkcolor=black,  % Color de los enlaces internos
+    citecolor=black   % Color de las citas
+}
+
+\makeatother
+
+\pagestyle{fancy}
+\fancyhead[L]{\textbf{Python/AI}}
+\fancyhead[C]{}
+\fancyhead[R]{2025}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\huge Understanding Hopfield Networks Through Hands-On Implementation} \\
+    \vspace{0.5cm}
+    \textit{A minimalist object-oriented approach to associative memory in Python.} \\
+    \vspace{1cm}
+    \textbf{Hernández Pérez Erick Fernando} \\
+    \vspace{0.5cm}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{img/icon.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\noindent The best way to learn something is by doing it—this is especially true when it comes to understanding the subtle details that often get lost in theoretical explanations. This is even more helpful for those who may not be fond of long summation operations and mathematical derivations.
+
+Let’s now focus on the project itself. We’ll work with three patterns laid out on a 7-row by 5-column grid. However, to process them in a Hopfield network, we need to convert these patterns into vectors by flattening the grid. This means taking the 7 rows and placing them one after another, resulting in vectors with 35 elements. Consequently, our Hopfield network will consist of 35 neurons.
+
+It’s also important to note that we’re using only three patterns for a specific reason: network stability. In this case, we are working with the digits 0, 1, and 2. Adding more digits could lead to instability in the network’s convergence, reducing its effectiveness.
+
+\begin{figure}[h!]
+    \centering
+    \subfloat[0]{\includegraphics[width=0.15\textwidth]{img/0.png}} 
+    \subfloat[1]{\includegraphics[width=0.15\textwidth]{img/1.png}}
+    \subfloat[2]{\includegraphics[width=0.15\textwidth]{img/2.png}}
+    \caption{Patterns}
+    \label{fig:imagenes}
+\end{figure}
+
+\section*{Object-Oriented Design Inspired by Machine Learning Libraries}
+
+To make our implementation more intuitive and modular, we adopt an \textbf{object-oriented approach}, directly inspired by the structure used in popular machine learning libraries in Python, such as \texttt{scikit-learn} and \texttt{PyTorch}. This design allows us to encapsulate the network’s behavior and internal state within a class, making the code easier to maintain, reuse, and extend.
+
+We define a class called \texttt{HopfieldNet} that contains all the core components of a Hopfield network:
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+class HopfieldNet:
+    def __init__(self):
+        self.W = None
+        self.patterns = []
+
+    def train(self, patterns):
+        self.patterns = [np.array(p).flatten() for p in patterns]
+        n = len(patterns[0])
+        self.W = np.zeros((n, n))
+        for p in self.patterns:
+            p = p.reshape(n, 1)
+            self.W += np.outer(p, p)
+        np.fill_diagonal(self.W, 0)
+        self.W /= len(patterns)
+
+    def sign(self, x):
+        return np.where(x >= 0, 1, -1)
+
+    def energy(self, s):
+        return -0.5 * s @ self.W @ s
+
+    def recall(self, initial_pattern, max_iter=500):
+        s = np.array(initial_pattern).flatten()
+        for iter in range(max_iter):
+            s_new = self.sign(self.W @ s)
+            if np.array_equal(s_new, s):
+                break
+            s = s_new
+
+        # Check match with trained patterns or their inverses
+        for idx, p in enumerate(self.patterns):
+            if np.array_equal(s, p) or np.array_equal(s, -p):
+                return idx, s.tolist(), iter
+
+        # No match found with any trained pattern or its inverse
+        return -1, s.tolist(), iter
+
+    def recall_with_history(self, initial_pattern, max_iter=500):
+        s = np.array(initial_pattern).flatten()
+        history = [s.copy()]
+
+        for _ in range(max_iter):
+            s_new = self.sign(self.W @ s)
+            history.append(s_new.copy())
+            if np.array_equal(s_new, s):
+                break
+            s = s_new
+
+        for idx, p in enumerate(self.patterns):
+            if np.array_equal(s, p) or np.array_equal(s, -p):
+                return idx, history, len(history)-1
+
+        return -1, history, len(history)-1
+\end{python}
+
+\subsection*{Class Description: \texttt{HopfieldNet}}
+
+\begin{itemize}
+    \item \texttt{\_\_init\_\_()}: Initializes the network. Sets the weight matrix \texttt{W} to \texttt{None} and prepares a list to store the flattened training patterns.
+
+    \item \texttt{train(patterns)}: Trains the network using the Hebbian learning rule. Each input pattern is flattened (from 2D to 1D), and the weight matrix is computed via the outer product of each pattern with itself. The diagonal is zeroed out to remove self-connections, and the result is normalized by the number of patterns.
+
+    \item \texttt{sign(x)}: Helper method that implements the bipolar activation function, assigning 1 to non-negative values and -1 to negative ones.
+
+    \item \texttt{energy(s)}: Computes the \textbf{energy} of a given state vector \texttt{s}. This is useful for analyzing the dynamics of the network, as Hopfield networks are energy-minimizing systems.
+
+    \item \texttt{recall(initial\_pattern, max\_iter=500)}: Attempts to recall a stored pattern from a noisy or incomplete input. The state is updated iteratively until convergence or until the maximum number of iterations is reached. If the final state matches (or is the inverse of) one of the trained patterns, it returns the index, the final state, and the number of iterations.
+
+    \item \texttt{recall\_with\_history(initial\_pattern, max\_iter=500)}: Similar to \texttt{recall}, but stores the state at each iteration. This is particularly useful for visualization, debugging, or animation of the convergence process.
+\end{itemize}
+
+This structured design not only follows good programming practices but also helps users familiar with machine learning frameworks to understand the flow of the code at a glance.
+
+\subsection*{External Utility Functions}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+def show_pattern(pattern, size=(7,5), title="Pattern"):
+    matrix = np.array(pattern).reshape(size)
+    plt.imshow(matrix, cmap='gray_r')
+    plt.title(title)
+    plt.axis('off')
+    plt.show()
+
+def add_noise(pattern, num_bits=5):
+    noisy_pattern = pattern.copy()
+    indices = random.sample(range(len(noisy_pattern)), num_bits)
+    for i in indices:
+        noisy_pattern[i] *= -1
+    return noisy_pattern
+def create_animation(history, size=(7, 5), title_prefix="Step", interval=500, save_as=None):
+    fig, ax = plt.subplots()
+    im = ax.imshow(np.array(history[0]).reshape(size), cmap='gray_r')
+    ax.axis('off')
+
+    def update(frame):
+        im.set_array(np.array(history[frame]).reshape(size))
+        ax.set_title(f"{title_prefix} {frame}")
+        return [im]
+
+    ani = animation.FuncAnimation(fig, update, frames=len(history), interval=interval, blit=True)
+
+    if save_as:
+        ani.save(save_as, writer='pillow')
+    else:
+        plt.show()
+\end{python}
+
+In addition to the \texttt{HopfieldNet} class, we implemented a set of external helper functions to assist with testing and visualizing how the network behaves during recall:
+
+\begin{itemize}
+    \item \texttt{show\_pattern(pattern, size, title)}: Displays a flattened pattern as a 2D image using \texttt{matplotlib}. This is useful for visual verification of patterns before and after recall.
+
+    \item \texttt{add\_noise(pattern, num\_bits)}: Introduces noise to a pattern by flipping the sign of a specified number of random bits. This simulates corrupted or incomplete inputs to test the network’s robustness.
+
+    \item \texttt{create\_animation(history, size, title\_prefix, interval, save\_as)}: Creates an animation that shows the evolution of the pattern over time as it converges to a stable state. This is particularly useful for understanding the dynamics of the network. Optionally, the animation can be saved as a GIF using \texttt{pillow}.
+\end{itemize}
+
+These functions were kept outside the class to preserve the network's abstraction while facilitating experimentation and visualization.
+
+\section*{Implementation and Experimentation}
+
+With the class and helper functions defined, we proceed to implement and test our Hopfield network. The experiment consists of the following steps:
+
+\begin{enumerate}
+    \item Define three training patterns, each represented as a vector of 35 bipolar values ($\pm1$), corresponding to a $7 \times 5$ grid.
+    \item Train the Hopfield network with these patterns using the Hebbian rule.
+    \item Generate 30 random bipolar patterns to test the network's ability to converge to one of the trained patterns.
+    \item For each random input:
+    \begin{itemize}
+        \item Display the original random pattern.
+        \item Feed it into the network for recall.
+        \item Display the resulting pattern returned by the network.
+        \item Store the index of the converged pattern for statistical analysis.
+    \end{itemize}
+    \item Finally, summarize the results by plotting the frequency with which the network converged to each trained pattern—or failed to converge to any.
+\end{enumerate}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+# --- Setup network and patterns ---
+
+# Training patterns
+patterns = [
+    [1,-1,-1,-1,1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,1,1,-1,1,-1,-1,-1,1],
+    [1,1,-1,1,1,1,-1,-1,1,1,1,1,-1,1,1,1,1,-1,1,1,1,1,-1,1,1,1,1,-1,1,1,1,-1,-1,-1,1],
+    [1,-1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,-1,1,1,1,-1,1,1,1,-1,1,1,1,-1,1,1,1,-1,-1,-1,-1,-1],
+]
+
+network = HopfieldNet()
+network.train(patterns)
+
+num_tests = 30
+size = (7,5)  # Adjust according to your patterns
+n = len(patterns[0])
+results = []
+
+for i in range(num_tests):
+    # Create a totally random pattern (values 1 or -1)
+    random_pattern = [random.choice([1, -1]) for _ in range(n)]
+
+    show_pattern(random_pattern, title=f"Random Pattern #{i+1}")
+
+    idx, recalled, iterations = network.recall(random_pattern)
+    results.append(idx)
+
+    show_pattern(recalled, title=f"Recalled Pattern #{i+1} (Index {idx})")
+
+# Plot convergence frequency
+import collections
+
+count = collections.Counter(results)
+indices = list(range(-1, len(patterns)))  # -1 means not recognized
+
+frequencies = [count[i] if i in count else 0 for i in indices]
+
+labels = ['Not recognized'] + [f'Pattern {i}' for i in range(len(patterns))]
+
+plt.bar(labels, frequencies, color='skyblue')
+plt.xticks(rotation=45)
+plt.ylabel('Frequency')
+plt.title('Convergence Frequency to Each Pattern')
+plt.show()
+\end{python}
+
+This test is crucial for observing how the network behaves with inputs that are not only noisy but also completely unstructured. The convergence analysis gives insight into the attractor dynamics of the Hopfield network and helps assess the influence of the training patterns on its memory capacity.
+
+The patterns used were intentionally selected to represent digits (0, 1, and 2) in a stylized binary form, with each digit encoded into a $7 \times 5$ grid. These grids were flattened to vectors of length 35 before being passed into the network.
+
+A summary bar chart was generated to show how many times the network converged to each stored pattern, or failed to recognize any of them (marked as "Not recognized").
+
+This experiment demonstrates both the capabilities and limitations of the Hopfield model when storing and recalling a small number of patterns in a low-dimensional setting.
+
+\subsection*{Results and Observations}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{img/chart.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+Out of the 30 random test patterns generated, the network successfully recognized and converged to one of the trained patterns (or their inverses) in 24 cases. This highlights the network's ability to not only retrieve original patterns but also correctly identify their negatives, which are equally valid stable states due to the symmetry of the Hopfield model.
+
+However, in the remaining 6 cases, the network did not converge to any of the trained patterns or their inverses. Instead, it settled into non-recognizable configurations known as \textbf{spurious states}. These are stable states that emerge naturally from the dynamics of the network but do not correspond to any of the intended memories. Among these 6 failures, a total of 3 distinct spurious patterns were observed.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_1.png}} 
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_2.png}}
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_3.png}} 
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_4.png}} 
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_5.png}} 
+    \subfloat[]{\includegraphics[width=0.15\textwidth]{img/esp_6.png}} 
+    \caption{Spurious Patterns}
+    \label{fig:imagenes}
+\end{figure}
+
+This behavior is expected in Hopfield networks, especially when storing multiple patterns in a relatively small network. It illustrates the inherent trade-off between capacity and reliability in associative memory systems.
+
+\begin{thebibliography}{9}
+
+\bibitem{mehlig}
+Mehlig, B. (2021). \textit{Machine learning with neural networks}. Department of Physics, University of Gothenburg.
+
+\end{thebibliography} 
+
+\begin{comment}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+
+\end{python}
+
+\begin{thebibliography}{9}
+
+\bibitem{bishop}
+Bishop, M. (2006). \textit{Pattern Recognition and Machine Learning}. Springer.
+
+\bibitem{fenner}
+Fenner, M. (2020). \textit{Machine Learning with Python for Everyone}. Addison-Wesley.
+
+\bibitem{geron}
+Géron, A. (2019). \textit{Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow}. O’Reilly
+
+\bibitem{harrington}
+Harrington, P. (2012). \textit{Machine Learning in Action}. Manning.
+
+\bibitem{mattmann}
+Mattmann, C. (2020). \textit{Machine Learning with TensorFlow}. Manning.
+
+\bibitem{raschka}
+Raschka, S., Liu, Y. \& Mirjalili, V. (2022). \textit{Machine Learning with PyTorch 
+and Scikit-Learn}. Packt.
+
+\bibitem{shalev}
+Shalev-Shwartz, S., \& Ben-David, S. (2014). \textit{Understanding machine learning: From theory to algorithms}. Cambridge University Press.
+
+\bibitem{wackerly}
+Wackerly, D., Mendenhall, W. \& Scheaffer, R. (2010). \textit{Estadística Matemática con Aplicaciones} [Mathematical statistics with applications]. Cengage Learning.
+
+
+\end{thebibliography} 
+\end{comment}
+
+\end{document}
+

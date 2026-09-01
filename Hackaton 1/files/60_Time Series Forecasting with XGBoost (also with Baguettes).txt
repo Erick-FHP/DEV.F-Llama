@@ -1,0 +1,547 @@
+\documentclass[10pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,mathrsfs}
+\usepackage{xparse}
+\usepackage[inline,shortlabels]{enumitem}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,partopsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=0.5in,bottom=0.2in,left=0.5in,right=0.5in,footskip=0.3in,includefoot]{geometry}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{minted} % tcolorbox minted library, required to use the "minted" tcb listing engine (this library is not loaded by the option [most])
+\usepackage{minted} % Allows input of raw code, such as Python code
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{amssymb}
+\usepackage{comment} 
+
+% Borrar
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[colorlinks]{hyperref} % ALWAYS load this package LAST
+
+\newtheorem{theorem}{Theorem}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2cm, right=2cm}
+
+% Custom tcolorbox style for Python code (not the code or the box it appears in, just the options for the box)
+\tcbset{
+    pythoncodebox/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,colframe=gray!20!black,
+        boxrule=1pt,top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top left,
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolframe] (frame.south west)
+                --([yshift=-4pt]frame.north west)
+                to[out=90,in=180] ([xshift=4pt]frame.north west)
+                --([xshift=-8pt]frame.north east)
+                to[out=0,in=180] ([xshift=16pt]frame.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox/.default={}, % Default is No title
+    %%% Starred version has no frame %%%
+    pythoncodebox*/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,coltitle=gray!20!black,colbacktitle=tcbcolback,
+        frame hidden,
+        top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top text left={yshift=-1mm},
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolback] (interior.south west)
+                --([yshift=-4pt]interior.north west)
+                to[out=90,in=180] ([xshift=4pt]interior.north west)
+                --([xshift=-8pt]interior.north east)
+                to[out=0,in=180] ([xshift=16pt]interior.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox*/.default={}, % Default is No title
+}
+
+% Custom tcolorbox for Python code (not the code itself, just the box it appears in)
+\newtcolorbox{pythonbox}[1][]{pythoncodebox=#1}
+\newtcolorbox{pythonbox*}[1][]{pythoncodebox*=#1} % Starred version has no frame
+
+% Custom minted environment for Python code, NOT using tcolorbox
+\newminted{python}{autogobble,breaklines,mathescape}
+
+% Custom tcblisting environment for Python code, using the "minted" tcb listing engine
+% Adapted from https://tex.stackexchange.com/a/402096
+\NewTCBListing{python}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+%%% Starred version has no frame %%%
+\NewTCBListing{python*}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox*={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+% verbbox environment, for showing verbatim text next to code output (for package documentation and user learning purposes)
+\NewTCBListing{verbbox}{ !O{} }{
+    listing engine=minted,
+    minted language=latex,
+    boxrule=1pt,sidebyside,skin=bicolor,
+    colback=gray!10,colbacklower=white,valign=center,
+    top=2pt,bottom=2pt,left=2pt,right=2pt,
+    #1
+} % Last argument allows more tcolorbox options to be added
+
+\setlength{\parindent}{0.2in}
+\setlength{\parskip}{0pt}
+\setlength{\columnseprule}{0pt}
+
+\makeatletter
+% Redefining the title block
+\renewcommand\maketitle{
+    \null\vspace{4mm}
+    \begin{center}
+        {\Huge\sffamily\bfseries\selectfont\@title}\\
+            \vspace{4mm}
+        {\Large\sffamily\selectfont\@author}\\
+            \vspace{4mm}
+        {\large\sffamily\selectfont\@date}
+    \end{center}
+    \vspace{6mm}
+}
+% Adapted from https://tex.stackexchange.com/questions/483953/how-to-add-new-macros-like-author-without-editing-latex-ltx?noredirect=1&lq=1
+
+\hypersetup{
+    colorlinks=true,  % Activa el color de los enlaces
+    linkcolor=black,  % Color de los enlaces internos
+    citecolor=black   % Color de las citas
+}
+
+\makeatother
+
+\pagestyle{fancy}
+\fancyhead[L]{\textbf{Python/AI}}
+\fancyhead[C]{}
+\fancyhead[R]{2025}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\huge Time Series Forecasting with XGBoost (also with Baguettes)} \\
+    \vspace{0.5cm}
+    \textit{Following the ``Baguette Series''.} \\
+    \vspace{1cm}
+    \textbf{Hernández Pérez Erick Fernando} \\
+    \vspace{0.5cm}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/icon.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\noindent 
+
+While it is true that time series forecasting relies heavily on solid mathematical and statistical foundations --- which I highly recommend studying in depth to uncover the subtle reasons behind why things are done the way they are (and to truly understand where models like ARIMA come from) --- we cannot overlook the fact that this series of articles is ultimately focused on the Artificial Intelligence perspective.
+
+In the previous articles, we explored the key theoretical and practical concepts that pave the way for working with time series data. That foundation was essential to build a clear intuition before diving into machine learning applications. 
+
+Now, it’s time to move from `traditional' forecasting models to more modern, data-driven approaches. In this article, we will explore how to leverage \textbf{XGBoost} for time series forecasting — one of the most powerful and versatile algorithms in the machine learning toolbox.
+
+To ensure continuity, we will revisit the \textit{Baguettes} dataset used in the previous post, \href{https://github.com/Erick-FHP/Series}{\textit{The Four Basic Forecasting Models in Python You Should Know (With Baguettes)}}, and demonstrate how to extend those methods into the realm of gradient-boosted trees. 
+
+\section*{What is XGBoost and Why Use It for Time Series Forecasting?}
+
+The algorithm known as \textbf{XGBoost} (eXtreme Gradient Boosting) is a high-performance implementation of the gradient-boosted decision tree (GBDT) framework. At its core it builds an ensemble of decision trees, where each new tree aims to correct the errors (residuals) of the existing ensemble via a gradient descent (and second-order) optimization of a loss function.
+
+\bigskip
+
+Key particularities of XGBoost that make it stand out:  
+
+\begin{itemize}  
+  \item Regularisation built-in: XGBoost introduces explicit penalties for complexity (tree depth, leaf weights, etc), which helps control overfitting.
+  \item Optimised training and scalability: It uses sparsity-aware algorithms, efficient cache and memory-aware blocks, and supports parallel/distributed training (even GPU) for very large datasets.
+  \item Versatility: Though originally common for classification or regression on tabular data, XGBoost is easily applied to many supervised tasks, with fine-tunable hyperparameters and good interpretability (via feature importance, though less than a single decision tree).  
+\end{itemize}
+
+\bigskip
+
+While traditional time series models (e.g., ARIMA, exponential smoothing) encode domain-specific structure (lags, seasonality, stationarity), they may struggle when the real-world data exhibit complex non-linearities, interactions or external covariates. The appeal of XGBoost in a time-series forecasting context lies in several aspects:  
+
+\bigskip
+
+\begin{itemize}  
+  \item Through feature engineering (lagged values, rolling statistics, calendar effects, external regressors) a time series problem can be cast as a supervised regression task — making it amenable to tree-based methods like XGBoost.  
+  \item The boosting mechanism allows capturing non-linear relationships and interactions between features (for example, how lag 3 interacts with day-of-week or holiday indicators).  
+  \item The regularisation and efficient training help when you have many candidate features or when you want to avoid over-fitting to noise.  
+  \item Empirical evidence (for example, the referenced study) suggests that well-tuned tree-based models can match or outperform many more complex deep-learning architectures when properly structured.  
+\end{itemize}
+
+\bigskip
+
+In the paper ``Do We Really Need Deep Learning Models for Time Series Forecasting?'' (Elsayed, Thyseens et al., 2021) the authors compare a gradient-boosting regression tree (GBRT) baseline (essentially in the spirit of XGBoost) against a variety of deep learning models on nine time-series datasets. They show that when the time-series forecasting task is recast as a window-based regression problem and features are carefully engineered, the tree‐based model actually outperforms the deep models. 
+
+This result underlines the important message: for many forecasting tasks, a well-designed feature-engineered machine-learning model (such as XGBoost) can be not only simpler to implement and interpret, but also competitive (or better) in performance compared to more ``black-box'' deep-learning alternatives.  
+
+Thus, in the context of this article series — where we first laid the theoretical and practical foundations of time series, and now shift toward AI-driven methods — employing XGBoost is a logical next step: it bridges familiar supervised-learning methods with the challenges of forecasting, enabling us to go beyond classical models into the machine-learning domain while retaining interpretability and efficiency.
+
+\section*{Let’s Move to the Hands-On Part}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import pandas as pd
+
+df_bakery = pd.read_csv('daily_sales_french_bakery.csv', parse_dates=['ds'])
+df_bakery = df_bakery.groupby('unique_id').filter(lambda x: len(x) >= 28)
+df_bakery = df_bakery.drop('unit_price', axis=1)
+df_baguette = df_bakery.loc[df_bakery['unique_id'] == 'BAGUETTE'].set_index('ds').drop('unique_id', axis=1).resample('D').interpolate(method='linear')
+
+fig, ax = plt.subplots(figsize=(15,8))
+
+sns.lineplot(
+    data=df_baguette,
+    x=df_baguette.index,
+    y='y',
+    ax=ax,
+    color='brown',
+    linewidth=2
+)
+
+ax.set_title('Historical Daily Baguette Sales ', fontsize=20, weight='bold')
+ax.set_xlabel('Date', fontsize=14)
+ax.set_ylabel('Sales', fontsize=14)
+ax.grid(True, linestyle='--', alpha=0.5)
+
+plt.xticks(rotation=45)
+ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:,.0f}'))
+
+plt.tight_layout()
+plt.show()
+\end{python}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{img/graph1.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\subsection*{Feature Engineering for Time Series: Giving XGBoost the Right Perspective}
+
+Before training XGBoost, we need to reshape our time series into a form that a supervised learning model can understand. Unlike classical models such as ARIMA, tree-based algorithms do not inherently know the temporal order of observations. Therefore, we must \textit{manually encode} the temporal structure of the data through feature engineering.  
+
+The following transformations were applied to our \texttt{df\_baguette} dataset:
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+df_baguette['day'] = df_baguette.index.day
+df_baguette['dayofweek'] = df_baguette.index.dayofweek
+df_baguette['month'] = df_baguette.index.month
+df_baguette['dayofyear'] = df_baguette.index.dayofyear
+df_baguette['year'] = df_baguette.index.year
+
+for lag in range(1, 8):
+    df_baguette[f'lag_{lag}'] = df_baguette['y'].shift(lag)
+
+df_baguette['rolling_mean_7'] = df_baguette['y'].rolling(7, min_periods=1).mean()
+df_baguette['rolling_std_7']  = df_baguette['y'].rolling(7, min_periods=1).std()
+df_baguette['target'] = df_baguette['y'].shift(-1)
+df_baguette = df_baguette.dropna()
+
+X = df_baguette.drop(columns=['y', 'target'])
+y = df_baguette['target']
+\end{python}
+
+Let’s break down what this transformation accomplishes:
+
+\begin{itemize}
+  \item \textbf{Calendar features} (\texttt{day}, \texttt{dayofweek}, \texttt{month}, \texttt{dayofyear}, \texttt{year}) encode temporal and seasonal information.  
+  They allow the model to capture patterns such as weekly demand cycles or monthly trends — elements that are often crucial in time-dependent behavior.
+
+  \item \textbf{Lag features} (\texttt{lag\_1} to \texttt{lag\_7}) represent the past seven days of the target variable.  
+  These features explicitly tell XGBoost what recent values looked like, enabling it to learn short-term dependencies similar to the autoregressive component in ARIMA models.
+
+  \item \textbf{Rolling statistics} (\texttt{rolling\_mean\_7}, \texttt{rolling\_std\_7}) summarize recent trends and volatility.  
+  Such aggregated information helps the model identify local level shifts, bursts in variability, or stabilization periods in the data.
+
+  \item \textbf{Target shifting.} By shifting the variable \texttt{y} one step ahead to create a new \texttt{target}, we transform the forecasting task into a one-step-ahead regression problem, where the features (\texttt{X}) describe the past and the label (\texttt{y}) represents the next observation to predict.
+\end{itemize}
+
+After cleaning missing values, we separate the dataset into predictors (\texttt{X}) and the forecasting target (\texttt{y}).  
+This process effectively turns our time series into a supervised learning dataset — one where XGBoost can apply its strength in capturing non-linear interactions, seasonal dependencies, and feature relationships without any explicit assumption of stationarity.
+
+\subsection*{Model Training and Hyperparameter Optimization}
+
+With our features prepared, the next step is to train and fine-tune the XGBoost model.  
+Unlike classical time series models, XGBoost requires explicit hyperparameter tuning to balance bias, variance, and computational efficiency.  
+In this section, we use \texttt{GridSearchCV} in combination with \texttt{TimeSeriesSplit} to find the best configuration for our data.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
+from xgboost import XGBRegressor
+
+xgb = XGBRegressor(objective='reg:squarederror')
+
+param_grid = {
+    'n_estimators': [100, 200, 300, 400, 500, 1000],
+    'max_depth': [3, 4, 5, 6, 7],
+    'learning_rate': [0.01, 0.05, 0.1],
+    'subsample': [0.6, 0.7, 0.8, 1.0]
+}
+
+tscv = TimeSeriesSplit(n_splits=5)
+
+gsearch = GridSearchCV(
+    estimator=xgb,
+    param_grid=param_grid,
+    scoring='neg_mean_absolute_error',
+    cv=tscv,
+    refit=False,
+    verbose=1,
+    n_jobs=-1
+)
+
+gsearch.fit(X, y)
+
+print("Best params:", gsearch.best_params_)
+print("Best MAE:", -gsearch.best_score_)
+\end{python}
+
+\begin{verbatim}
+Fitting 5 folds for each of 360 candidates, totalling 1800 fits
+Best params: {'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 300, 'subsample': 0.6}
+Best MAE: 10.58068087394421
+\end{verbatim}
+
+Let’s break down each component of this process:
+
+\begin{itemize}
+  \item \textbf{XGBRegressor:}  
+  This is the regression implementation of XGBoost, configured here with the objective function \texttt{'reg:squarederror'}, which minimizes the mean squared error between predicted and actual values.
+
+  \item \textbf{Hyperparameter grid:}  
+  The dictionary \texttt{param\_grid} defines the search space for tuning the model’s complexity and learning behavior:
+  \begin{itemize}
+    \item \texttt{n\_estimators} controls the number of boosting rounds (trees). More trees can capture more complex patterns but may lead to overfitting.
+    \item \texttt{max\_depth} limits the maximum depth of each tree, managing the model’s complexity.
+    \item \texttt{learning\_rate} shrinks the contribution of each tree, providing a trade-off between training speed and generalization.
+    \item \texttt{subsample} determines the fraction of samples used to grow each tree, introducing randomness to reduce overfitting.
+  \end{itemize}
+
+  \item \textbf{TimeSeriesSplit:}  
+  Unlike random cross-validation, \texttt{TimeSeriesSplit} preserves temporal order.  
+  Each fold trains on past data and validates on future observations, mimicking real-world forecasting conditions and avoiding data leakage.
+
+  \item \textbf{GridSearchCV:}  
+  This tool exhaustively tests all hyperparameter combinations defined in \texttt{param\_grid} using the specified cross-validation strategy.  
+  We use \texttt{neg\_mean\_absolute\_error} as the scoring metric because MAE is robust to outliers and interpretable in forecasting contexts.
+
+  \item \textbf{Model selection:}  
+  After training, the grid search reports the best parameter combination (\texttt{best\_params\_}) and its corresponding validation error (\texttt{best\_score\_}).  
+  The lower the MAE, the better the model generalizes to unseen temporal segments.
+\end{itemize}
+
+This process ensures that our final XGBoost configuration is well-tuned for the temporal structure of the data, providing a strong foundation before moving into the evaluation and interpretation phase.  
+It also highlights an important principle in machine learning for time series: \textit{model performance depends not only on the algorithm itself, but on how well its parameters and validation strategy respect the time-dependent nature of the data.}
+
+\subsection*{Final Model Training and Performance Visualization}
+
+After identifying the best hyperparameters through cross-validation, we can now train a final XGBoost model on the training portion of our dataset and evaluate its performance on unseen data.
+
+This step simulates a realistic forecasting scenario where the model is fit on historical data and then tested on future observations.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from xgboost import XGBRegressor
+
+# -----------------------------
+# Train/test split
+# -----------------------------
+train_X = X.loc[X.index < '2022-03-01'].copy()
+train_y = y.loc[y.index < '2022-03-01'].copy()
+
+test_X = X.loc[X.index >= '2022-03-01'].copy()
+test_y = y.loc[y.index >= '2022-03-01'].copy()
+
+# -----------------------------
+# Train model
+# -----------------------------
+model = XGBRegressor(
+    learning_rate=0.01,
+    max_depth=3,
+    n_estimators=300,
+    subsample=0.6,
+    random_state=42
+)
+
+model.fit(train_X, train_y)
+
+# -----------------------------
+# Ensure same feature order
+# -----------------------------
+model_features = model.get_booster().feature_names
+test_X = test_X[model_features].copy()
+
+# -----------------------------
+# Predict
+# -----------------------------
+test_pred = model.predict(test_X)
+
+# Crear DataFrame con resultados
+results = pd.DataFrame({
+    'y_true': test_y,
+    'y_pred': test_pred
+}, index=test_y.index)
+
+# -----------------------------
+# Plot real vs predicted
+# -----------------------------
+fig, ax = plt.subplots(figsize=(15, 8))
+
+sns.lineplot(
+    data=results,
+    x=results.index,
+    y='y_true',
+    ax=ax,
+    color='brown',
+    linewidth=2,
+    label='Actual'
+)
+
+sns.lineplot(
+    data=results,
+    x=results.index,
+    y='y_pred',
+    ax=ax,
+    color='green',
+    linewidth=2,
+    label='Predicted'
+)
+
+ax.set_title('Daily Baguette Sales Forecast (Test Period)', fontsize=20, weight='bold')
+ax.set_xlabel('Date', fontsize=14)
+ax.set_ylabel('Sales', fontsize=14)
+ax.grid(True, linestyle='--', alpha=0.5)
+
+plt.xticks(rotation=45)
+ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:,.0f}'))
+
+ax.legend()
+plt.tight_layout()
+plt.show()
+\end{python}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{img/graph2.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+We manually split the dataset into a training and test period, ensuring that the temporal order of observations is respected — a crucial step for any time series experiment.  This mirrors the way forecasts are generated in real operational settings: the model learns from the past and predicts what comes next.
+
+\begin{itemize}
+  \item The chosen parameters (\texttt{learning\_rate = 0.01}, \texttt{max\_depth = 3}, \texttt{n\_estimators = 300}, \texttt{subsample = 0.6}) were selected from the grid search, balancing model complexity and generalization.
+  \item The prediction step produces a time-indexed DataFrame containing both actual (\texttt{y\_true}) and predicted (\texttt{y\_pred}) values.
+  \item The visualization uses \texttt{seaborn} to display how closely the model tracks the actual series during the test window.
+\end{itemize}
+
+The resulting chart illustrates the model’s ability to capture temporal dynamics (including trends, fluctuations, and seasonality) while maintaining smooth, data-driven forecasts.
+
+Although XGBoost does not inherently model time dependence like ARIMA or LSTM, well-designed features and tuned hyperparameters allow it to perform competitively in practical forecasting tasks.
+
+This hands-on stage marks the culmination of our journey: transforming a raw time series into a predictive, machine-learning-powered system that can generalize beyond historical data.  
+In the next steps, we could further extend this analysis with error diagnostics, feature importance visualization, or even hybrid ensemble approaches combining statistical and ML methods.
+
+
+\begin{thebibliography}{9}
+
+\bibitem{auffarth}
+Auffarth, B. (2021). \textit{Machine Learning for Time-Series with Python}. Packt.
+
+\bibitem{arxiv}
+Elsayed, S., Thyssens, D., Rashed, A., Jomaa, H. S., \& Schmidt-Thieme, L. (2021). \textit{Do we really need deep learning models for time series forecasting?} arXiv. \url{https://arxiv.org/abs/2101.02118}
+
+\end{thebibliography} 
+
+\begin{comment}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+
+\end{python}
+
+\begin{thebibliography}{9}
+
+\bibitem{auffarth}
+Auffarth, B. (2021). \textit{Machine Learning for Time-Series with Python}. Packt.
+
+\bibitem{bishop}
+Bishop, M. (2006). \textit{Pattern Recognition and Machine Learning}. Springer.
+
+\bibitem{fenner}
+Fenner, M. (2020). \textit{Machine Learning with Python for Everyone}. Addison-Wesley.
+
+\bibitem{geron}
+Géron, A. (2019). \textit{Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow}. O’Reilly
+
+\bibitem{harrington}
+Harrington, P. (2012). \textit{Machine Learning in Action}. Manning.
+
+\bibitem{mattmann}
+Mattmann, C. (2020). \textit{Machine Learning with TensorFlow}. Manning.
+
+\bibitem{raschka}
+Raschka, S., Liu, Y. \& Mirjalili, V. (2022). \textit{Machine Learning with PyTorch 
+and Scikit-Learn}. Packt.
+
+\bibitem{sklearn}
+Scikit-learn developers. (n.d.). Scikit-learn: Machine learning in Python. \url{https://scikit-learn.org/stable/}
+
+\bibitem{shalev}
+Shalev-Shwartz, S., \& Ben-David, S. (2014). \textit{Understanding machine learning: From theory to algorithms}. Cambridge University Press.
+
+\bibitem{wackerly}
+Wackerly, D., Mendenhall, W. \& Scheaffer, R. (2010). \textit{Estadística Matemática con Aplicaciones} [Mathematical statistics with applications]. Cengage Learning.
+
+
+\end{thebibliography} 
+\end{comment}
+
+\end{document}
+

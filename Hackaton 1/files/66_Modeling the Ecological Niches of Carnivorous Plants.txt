@@ -1,0 +1,560 @@
+\documentclass[10pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,mathrsfs}
+\usepackage{xparse}
+\usepackage[inline,shortlabels]{enumitem}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,partopsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=0.5in,bottom=0.2in,left=0.5in,right=0.5in,footskip=0.3in,includefoot]{geometry}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{minted} % tcolorbox minted library, required to use the "minted" tcb listing engine (this library is not loaded by the option [most])
+\usepackage{minted} % Allows input of raw code, such as Python code
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{amssymb}
+\usepackage{comment} 
+
+% Borrar
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[colorlinks]{hyperref} % ALWAYS load this package LAST
+
+\newtheorem{theorem}{Theorem}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2cm, right=2cm}
+
+% Custom tcolorbox style for Python code (not the code or the box it appears in, just the options for the box)
+\tcbset{
+    pythoncodebox/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,colframe=gray!20!black,
+        boxrule=1pt,top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top left,
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolframe] (frame.south west)
+                --([yshift=-4pt]frame.north west)
+                to[out=90,in=180] ([xshift=4pt]frame.north west)
+                --([xshift=-8pt]frame.north east)
+                to[out=0,in=180] ([xshift=16pt]frame.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox/.default={}, % Default is No title
+    %%% Starred version has no frame %%%
+    pythoncodebox*/.style={
+        enhanced jigsaw,breakable,
+        colback=gray!10,coltitle=gray!20!black,colbacktitle=tcbcolback,
+        frame hidden,
+        top=2pt,bottom=2pt,left=2pt,right=2pt,
+        sharp corners,before skip=10pt,after skip=10pt,
+        attach boxed title to top text left={yshift=-1mm},
+        boxed title style={empty,
+            top=0pt,bottom=0pt,left=2pt,right=2pt,
+            interior code={\fill[fill=tcbcolback] (interior.south west)
+                --([yshift=-4pt]interior.north west)
+                to[out=90,in=180] ([xshift=4pt]interior.north west)
+                --([xshift=-8pt]interior.north east)
+                to[out=0,in=180] ([xshift=16pt]interior.south east)
+                --cycle;
+            }
+        },
+        title={#1}, % Argument of pythoncodebox specifies the title
+        fonttitle=\sffamily\bfseries
+    },
+    pythoncodebox*/.default={}, % Default is No title
+}
+
+% Custom tcolorbox for Python code (not the code itself, just the box it appears in)
+\newtcolorbox{pythonbox}[1][]{pythoncodebox=#1}
+\newtcolorbox{pythonbox*}[1][]{pythoncodebox*=#1} % Starred version has no frame
+
+% Custom minted environment for Python code, NOT using tcolorbox
+\newminted{python}{autogobble,breaklines,mathescape}
+
+% Custom tcblisting environment for Python code, using the "minted" tcb listing engine
+% Adapted from https://tex.stackexchange.com/a/402096
+\NewTCBListing{python}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+%%% Starred version has no frame %%%
+\NewTCBListing{python*}{ !O{} !D(){} !G{} }{
+    listing engine=minted,
+    listing only,
+    pythoncodebox*={#1}, % First argument specifies the title (if any)
+    minted language=python,
+    minted options/.expanded={
+        autogobble,breaklines,mathescape,
+        #2 % Second argument, delimited by (), denotes options for the minted environment
+    },
+    #3 % Third argument, delimited by {}, denotes options for the tcolorbox
+}
+
+% verbbox environment, for showing verbatim text next to code output (for package documentation and user learning purposes)
+\NewTCBListing{verbbox}{ !O{} }{
+    listing engine=minted,
+    minted language=latex,
+    boxrule=1pt,sidebyside,skin=bicolor,
+    colback=gray!10,colbacklower=white,valign=center,
+    top=2pt,bottom=2pt,left=2pt,right=2pt,
+    #1
+} % Last argument allows more tcolorbox options to be added
+
+\setlength{\parindent}{0.2in}
+\setlength{\parskip}{0pt}
+\setlength{\columnseprule}{0pt}
+
+\makeatletter
+% Redefining the title block
+\renewcommand\maketitle{
+    \null\vspace{4mm}
+    \begin{center}
+        {\Huge\sffamily\bfseries\selectfont\@title}\\
+            \vspace{4mm}
+        {\Large\sffamily\selectfont\@author}\\
+            \vspace{4mm}
+        {\large\sffamily\selectfont\@date}
+    \end{center}
+    \vspace{6mm}
+}
+% Adapted from https://tex.stackexchange.com/questions/483953/how-to-add-new-macros-like-author-without-editing-latex-ltx?noredirect=1&lq=1
+
+\hypersetup{
+    colorlinks=true,  % Activa el color de los enlaces
+    linkcolor=black,  % Color de los enlaces internos
+    citecolor=black   % Color de las citas
+}
+
+\makeatother
+
+\pagestyle{fancy}
+\fancyhead[L]{\textbf{Python/AI}}
+\fancyhead[C]{}
+\fancyhead[R]{2026}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\huge Modeling the Ecological Niches of Carnivorous Plants} \\
+    \vspace{0.5cm}
+    \textit{A data-driven exploration of genus-level patterns using the Harvard carnivorous plant dataset.} \\
+    \vspace{1cm}
+    \textbf{Hernández Pérez Erick Fernando} \\
+    \vspace{0.5cm}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/icon.png} 
+    \caption{}
+    \label{fig:imagen}
+\end{figure}
+
+\noindent It is time to move beyond exploration and begin building upon the carnivorous plant dataset made available by Harvard University. In this new stage, we aim not only to deepen our understanding of the data, but also to implement a machine learning model capable of performing geospatial identification of the different genera of carnivorous plants worldwide. This direction emerges naturally from the findings of the previous article, where an opportunity was identified to transition from descriptive analysis to predictive modeling.
+
+To achieve this, the original dataset will be enriched with environmental information, specifically 19 bioclimatic variables and elevation data. These variables are sourced from the WorldClim database \cite{clime}, which provides high-quality global climate layers commonly used in ecological and species distribution modeling. The inclusion of these variables allows us to incorporate temperature, precipitation, seasonality, and topographic effects—key factors influencing the ecological niches of carnivorous plants.
+
+The bioclimatic data used in this study correspond to the dataset \texttt{wc2.1\_2.5m\_bio} and \texttt{wc2.1\_2.5m\_elev}, which represents WorldClim version 2.1 at a spatial resolution of 2.5 arc-minutes, equivalent to approximately 4--5 km at the equator. This resolution strikes a balance between global coverage and ecological relevance, making it well suited for large-scale geospatial modeling.
+
+By combining species occurrence records with climate and elevation variables, we create a richer feature space that enables effective feature engineering and sets the foundation for robust machine learning models. This enriched dataset will allow us to explore whether distinct carnivorous plant genera occupy identifiable environmental niches and whether these niches can be learned and classified through data-driven approaches.
+
+\section*{Dataset Enrichment with Bioclimatic and Elevation Variables}
+
+To enable more informative ecological and machine learning analyses, the original carnivorous plant dataset is enriched with environmental variables. Specifically, we incorporate the 19 standard bioclimatic variables and elevation data obtained from the WorldClim v2.1 dataset \cite{clime}. These variables capture key aspects of climate such as temperature, precipitation, seasonality, and extremes, all of which play a fundamental role in shaping species distributions.
+
+The first step consists of downloading the 19 bioclimatic raster layers (\texttt{BIO1}–\texttt{BIO19}) along with the elevation raster, all at a spatial resolution of 2.5 arc-minutes. Each raster represents a global gridded surface from which environmental values can be extracted at specific geographic coordinates.
+
+Once the raster layers are loaded, environmental values are extracted for each occurrence record using the longitude and latitude provided in the original dataset. A nearest-neighbor approach is applied to match each point to the corresponding raster cell. This process results in a single, enriched tabular dataset where each plant record is associated with climate and elevation attributes.
+
+After enrichment, the dataset is exported as a CSV file, which serves as the foundation for subsequent feature engineering and modeling steps. Fortunately, the resulting dataset requires minimal cleaning.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import rioxarray as rxr
+import glob
+import os
+
+data_dir = ""
+
+bio_rasters = {}
+
+for i in range(1, 20):
+    path = os.path.join(data_dir, f"wc2.1_2.5m_bio_{i}.tif")
+    bio_rasters[f"bio{i}"] = rxr.open_rasterio(path)
+
+elev_path = os.path.join(data_dir, "wc2.1_2.5m_elev.tif")
+elevation = rxr.open_rasterio(elev_path)
+
+print(list(bio_rasters.keys()))
+print("Elev:", elevation)
+\end{python}
+
+\begin{verbatim}
+    ['bio1', 'bio2', 'bio3', 'bio4', 'bio5', 'bio6', 'bio7', 'bio8', 'bio9', 'bio10', 'bio11', 'bio12', 'bio13', 'bio14', 'bio15', 'bio16', 'bio17', 'bio18', 'bio19']
+Elev: <xarray.DataArray (band: 1, y: 4320, x: 8640)> Size: 75MB
+[37324800 values with dtype=int16]
+Coordinates:
+  * band         (band) int64 8B 1
+  * y            (y) float64 35kB 89.98 89.94 89.9 89.85 ... -89.9 -89.94 -89.98
+  * x            (x) float64 69kB -180.0 -179.9 -179.9 ... 179.9 179.9 180.0
+    spatial_ref  int64 8B 0
+Attributes:
+    AREA_OR_POINT:       Area
+    STATISTICS_MAXIMUM:  7412
+    STATISTICS_MEAN:     1.#SNAN
+    STATISTICS_MINIMUM:  -415
+    STATISTICS_STDDEV:   1.#SNAN
+    _FillValue:          -32768
+    scale_factor:        1.0
+    add_offset:          0.0
+\end{verbatim}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+def extract_value(raster, lon, lat):
+    return float(raster.sel(x=lon, y=lat, method="nearest").values)
+
+import pandas as pd
+
+for bio_name, raster in bio_rasters.items():
+    df[bio_name] = [
+        extract_value(raster, lon, lat)
+        for lon, lat in zip(df.longitude, df.latitude)
+    ]
+
+df["elevation"] = [
+    extract_value(elevation, lon, lat)
+    for lon, lat in zip(df.longitude, df.latitude)
+]
+
+df.to_csv('Riched Carnivorous Plant.csv')
+\end{python}
+
+\section*{Machine Learning Model for Genus Classification}
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+top = ['Utricularia', 'Drosera', 'Pinguicula']
+
+df['cat_genus'] = df['genus'].apply(lambda g: g if g in top else "OTHERS")
+
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df['cat_genus'] = le.fit_transform(df['cat_genus']).astype(float)
+\end{python}
+
+With the enriched dataset in place, we proceed to the implementation of a machine learning model aimed at classifying carnivorous plant records into the four previously defined genus categories. The objective is to evaluate whether bioclimatic, topographic, and spatially derived features can effectively capture ecological signals that distinguish dominant genera from the aggregated group of rarer taxa.
+
+The following code implements the complete machine learning pipeline used to classify carnivorous plant records into the four defined genus categories based on environmental and spatial features. The workflow is designed to minimize bias, prevent data leakage, and evaluate the model under realistic spatial generalization conditions.
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import GroupKFold
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.feature_selection import SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
+from catboost import CatBoostClassifier
+from collections import Counter
+import matplotlib.pyplot as plt
+
+# ---------------------------------------------------
+# 1. LOAD DATASET
+# ---------------------------------------------------
+df = pd.read_csv("Riched Carnivorous Plant.csv")
+
+# ---------------------------------------------------
+# 2. FEATURE ENGINEERING
+# ---------------------------------------------------
+df["dist_equator"] = df["latitude"].abs()
+df["dist_meridian"] = df["longitude"].abs()
+df["lat_lon_interaction"] = df["latitude"] * df["longitude"]
+df["hemisphere_lat"] = (df["latitude"] > 0).astype(int)
+df["hemisphere_lon"] = (df["longitude"] > 0).astype(int)
+df["temp_range"] = df["bio5"] - df["bio6"]
+precip_cols = ["bio12", "bio13", "bio14"]
+df["precip_cv"] = df[precip_cols].std(axis=1) / df[precip_cols].mean(axis=1)
+
+# ---------------------------------------------------
+# 3. FEATURES AND TARGET
+# ---------------------------------------------------
+X = df.drop(columns=[
+    'id','family','genus','species','study.name','range',
+    'num.precision','cat_genus'
+])
+y = df['cat_genus']
+
+# ---------------------------------------------------
+# 4. SPATIAL BLOCKS (GROUPS)
+# ---------------------------------------------------
+df["lat_block"] = (df["latitude"] // 10).astype(int)
+df["lon_block"] = (df["longitude"] // 10).astype(int)
+groups = df["lat_block"].astype(str) + "_" + df["lon_block"].astype(str)
+
+# ---------------------------------------------------
+# 5. CLASS WEIGHTS (DICT FORMAT)
+# ---------------------------------------------------
+class_counts = Counter(y)
+total = sum(class_counts.values())
+class_weights = {cls: total / count for cls, count in class_counts.items()}
+
+# ---------------------------------------------------
+# 6. SPATIAL CROSS-VALIDATION
+# ---------------------------------------------------
+cv = GroupKFold(n_splits=5)
+all_reports = []
+y_true_all = []
+y_pred_all = []
+
+for fold, (train_idx, test_idx) in enumerate(cv.split(X, y, groups)):
+    print(f"\n=== FOLD {fold+1} ===")
+
+    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+    # -----------------------------------------------
+    # FEATURE SELECTION INSIDE FOLD (no data leakage)
+    # -----------------------------------------------
+    selector = SelectFromModel(
+        RandomForestClassifier(n_estimators=500, random_state=42),
+        threshold="median"
+    )
+    selector.fit(X_train, y_train)
+
+    X_train_sel = selector.transform(X_train)
+    X_test_sel = selector.transform(X_test)
+
+    print(f"Selected features in fold {fold+1}: {X_train_sel.shape[1]}")
+
+    # -----------------------------------------------
+    # CATBOOST MODEL
+    # -----------------------------------------------
+    model = CatBoostClassifier(
+        iterations=600,
+        depth=6,
+        learning_rate=0.05,
+        l2_leaf_reg=3,
+        verbose=0,
+        random_seed=42,
+        class_weights=class_weights
+    )
+    model.fit(X_train_sel, y_train)
+
+    # -----------------------------------------------
+    # FOLD PREDICTIONS
+    # -----------------------------------------------
+    y_pred = model.predict(X_test_sel)
+
+    # Save for overall metrics
+    y_true_all.extend(y_test)
+    y_pred_all.extend(y_pred)
+
+    # Fold metrics
+    report = classification_report(y_test, y_pred, output_dict=True)
+    all_reports.append(report)
+
+    print(classification_report(y_test, y_pred))
+
+# ---------------------------------------------------
+# 7. AVERAGE MACRO F1 ACROSS FOLDS
+# ---------------------------------------------------
+f1_scores = [r['macro avg']['f1-score'] for r in all_reports]
+print(f"\nAverage Macro F1 across folds: {np.mean(f1_scores):.3f}")
+
+# ---------------------------------------------------
+# 8. GLOBAL CONFUSION MATRIX
+# ---------------------------------------------------
+cm = confusion_matrix(y_true_all, y_pred_all)
+plt.figure(figsize=(6,5))
+plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+plt.title("Confusion Matrix - CatBoost")
+plt.colorbar()
+classes = np.unique(y)
+tick_marks = np.arange(len(classes))
+plt.xticks(tick_marks, classes, rotation=45)
+plt.yticks(tick_marks, classes)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.tight_layout()
+plt.show()
+\end{python}
+
+The pipeline begins by loading the enriched dataset, which already includes bioclimatic variables, elevation, and geographic coordinates. Several additional features are then engineered to capture large-scale spatial structure and environmental gradients, such as distance to the equator, hemispheric indicators, temperature range, and precipitation variability. These derived features complement the raw climate variables and help the model learn ecologically meaningful patterns.
+
+The target variable corresponds to the categorical genus grouping, while predictor variables exclude taxonomic labels and metadata to avoid trivial or indirect leakage of the true class. To further address spatial autocorrelation, the dataset is partitioned into geographic blocks of 10° latitude by 10° longitude. These blocks are used as grouping units in a \texttt{GroupKFold} cross-validation scheme, ensuring that training and test data are spatially disjoint.
+
+Class imbalance is handled by computing inverse-frequency class weights, which are later passed to the classifier. Within each cross-validation fold, feature selection is performed using a Random Forest model, retaining only the most informative predictors based on feature importance. Crucially, this step is executed independently within each fold to prevent information leakage from the test data.
+
+The final classification model is a CatBoost classifier, chosen for its strong performance on tabular data, ability to model nonlinear interactions, and robustness in multiclass settings. Model performance is evaluated using per-fold classification reports, macro-averaged F1 scores, and an aggregated confusion matrix computed across all folds. This setup provides a comprehensive assessment of both overall performance and class-specific behavior under spatially realistic conditions.
+
+\subsection*{Results}
+
+\begin{verbatim}
+ 
+=== FOLD 1 ===
+Selected features in fold 1: 15
+              precision    recall  f1-score   support
+
+         0.0       1.00      1.00      1.00     10403
+         1.0       0.99      1.00      1.00       556
+         2.0       1.00      1.00      1.00      2754
+         3.0       1.00      1.00      1.00      4811
+
+    accuracy                           1.00     18524
+   macro avg       1.00      1.00      1.00     18524
+weighted avg       1.00      1.00      1.00     18524
+
+
+=== FOLD 2 ===
+Selected features in fold 2: 15
+              precision    recall  f1-score   support
+
+         0.0       1.00      1.00      1.00      7014
+         1.0       0.99      1.00      0.99       486
+         2.0       1.00      1.00      1.00      4520
+         3.0       1.00      1.00      1.00      6504
+
+    accuracy                           1.00     18524
+   macro avg       1.00      1.00      1.00     18524
+weighted avg       1.00      1.00      1.00     18524
+
+
+=== FOLD 3 ===
+Selected features in fold 3: 15
+              precision    recall  f1-score   support
+
+         0.0       1.00      1.00      1.00      6611
+         1.0       1.00      1.00      1.00       718
+         2.0       1.00      1.00      1.00      3857
+         3.0       1.00      1.00      1.00      7337
+
+    accuracy                           1.00     18523
+   macro avg       1.00      1.00      1.00     18523
+weighted avg       1.00      1.00      1.00     18523
+
+
+=== FOLD 4 ===
+Selected features in fold 4: 15
+              precision    recall  f1-score   support
+
+         0.0       1.00      1.00      1.00      8012
+         1.0       0.99      0.99      0.99       257
+         2.0       1.00      1.00      1.00      5437
+         3.0       1.00      1.00      1.00      4817
+
+    accuracy                           1.00     18523
+   macro avg       1.00      1.00      1.00     18523
+weighted avg       1.00      1.00      1.00     18523
+
+
+=== FOLD 5 ===
+Selected features in fold 5: 15
+              precision    recall  f1-score   support
+
+         0.0       1.00      1.00      1.00      9126
+         1.0       0.99      1.00      0.99      1637
+         2.0       1.00      1.00      1.00      1945
+         3.0       1.00      1.00      1.00      5815
+
+    accuracy                           1.00     18523
+   macro avg       1.00      1.00      1.00     18523
+weighted avg       1.00      1.00      1.00     18523
+
+
+Average Macro F1 across folds: 0.999
+\end{verbatim}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/graph1.png}
+\end{figure}
+
+The classification model exhibits consistently strong performance across all five spatial cross-validation folds. In each fold, feature selection retained 15 predictors, indicating a stable and informative subset of variables throughout the training process.
+
+Across folds, overall accuracy remains effectively perfect, with macro-averaged F1 scores equal to or very close to 1.00. The average macro F1 score across all folds is 0.999, demonstrating that the model performs equally well across all four genus categories, despite class imbalance. Precision and recall values are uniformly high for all classes, including the least represented category, suggesting that the applied class weighting strategy is effective.
+
+Minor deviations from perfect scores are observed primarily in one of the intermediate categories, where precision and recall occasionally fall slightly below 1.00. However, these variations are minimal and do not substantially impact overall model performance. The aggregated confusion matrix confirms that misclassifications are rare and not systematically biased toward any particular class.
+
+These results indicate that the combination of bioclimatic variables, elevation, and engineered spatial features provides a highly informative representation of the ecological niches associated with the dominant carnivorous plant genera. At the spatial scale considered, the model is able to clearly separate these categories based on environmental conditions alone.
+
+At the same time, the near-perfect performance warrants careful interpretation. Such strong results suggest that genus-level ecological niches are highly distinct in the selected feature space, but they also highlight the importance of validating the model under alternative spatial resolutions or with independent datasets to assess its robustness beyond the current configuration.
+
+\begin{thebibliography}{9}
+
+\bibitem{harvard}
+Ellison, A., Fitzpatrick, M., \& Gotelli, N. (2023).\textit{ Species distribution modeling of carnivorous plants worldwide (Version 4)} [Data set]. Harvard Forest Data Archive. Environmental Data Initiative. \url{https://doi.org/10.6073/pasta/af85078378dc3f0b4e82d4630a78d393}
+
+\bibitem{clime}
+Fick, S. E., \& Hijmans, R. J. (2017). \textit{WorldClim 2: New 1 km spatial resolution climate surfaces for global land areas}. International Journal of Climatology, 37(12), 4302–4315. \url{https://doi.org/10.1002/joc.5086}
+
+\bibitem{yo}
+Hernández, E. (2026). \textit{Enriched global carnivorous plant dataset} [Data set]. Kaggle. \url{https://doi.org/10.34740/kaggle/dsv/14466755}
+
+
+
+\end{thebibliography} 
+
+\begin{comment}
+
+\begin{python}[](style=one-dark){colback=gray!40!black,colframe=blue}
+
+\end{python}
+
+\begin{thebibliography}{9}
+
+\bibitem{auffarth}
+Auffarth, B. (2021). \textit{Machine Learning for Time-Series with Python}. Packt.
+
+\bibitem{bishop}
+Bishop, M. (2006). \textit{Pattern Recognition and Machine Learning}. Springer.
+
+\bibitem{fenner}
+Fenner, M. (2020). \textit{Machine Learning with Python for Everyone}. Addison-Wesley.
+
+\bibitem{geron}
+Géron, A. (2019). \textit{Hands-on Machine Learning with Scikit-Learn, Keras, and TensorFlow}. O’Reilly
+
+\bibitem{harrington}
+Harrington, P. (2012). \textit{Machine Learning in Action}. Manning.
+
+\bibitem{mattmann}
+Mattmann, C. (2020). \textit{Machine Learning with TensorFlow}. Manning.
+
+\bibitem{raschka}
+Raschka, S., Liu, Y. \& Mirjalili, V. (2022). \textit{Machine Learning with PyTorch 
+and Scikit-Learn}. Packt.
+
+\bibitem{sklearn}
+Scikit-learn developers. (n.d.). Scikit-learn: Machine learning in Python. \url{https://scikit-learn.org/stable/}
+
+\bibitem{shalev}
+Shalev-Shwartz, S., \& Ben-David, S. (2014). \textit{Understanding machine learning: From theory to algorithms}. Cambridge University Press.
+
+\bibitem{wackerly}
+Wackerly, D., Mendenhall, W. \& Scheaffer, R. (2010). \textit{Estadística Matemática con Aplicaciones} [Mathematical statistics with applications]. Cengage Learning.
+
+
+\end{thebibliography} 
+\end{comment}
+
+\end{document}
+
